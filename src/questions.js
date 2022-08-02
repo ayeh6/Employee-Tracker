@@ -1,3 +1,22 @@
+const mysql = require('mysql2');
+const db = require('./../db/connection');
+
+const listEmployees = async (ans) => {
+    
+}
+
+const listEmployeesNone = async (ans) => {
+    
+}
+
+const listEmployeesExceptSelf = async (ans) => {
+
+}
+
+const listRoles = async (ans) => {
+
+}
+
 const mainOptions = [
     {
         message: "Select an option:",
@@ -42,10 +61,66 @@ const addRoleQuestions = [
         type: "input",
     },
     {
-        message: "Select department:",
+        message: "Select department for role:",
         name: "department",
         type: "list",
+        //choices: list of departments
     }
 ];
 
-module.exports = {mainOptions};
+const addEmployeeQuestions = [
+    {
+        message: "Enter first name of employee:",
+        name: "first_name",
+        type: "input",
+    },
+    {
+        message: "Enter last name of employee:",
+        name: "last_name",
+        type: "input",
+    },
+    {
+        message: "Select employee's role:",
+        name: "role",
+        type: "list",
+    },
+    {
+        message: "Select employee's manager:",
+        name: "manager",
+        type: "list",
+        choices: listEmployeesNone,
+    }
+];
+
+const updateEmployeeQuestions = [
+    {
+        message: "Select employee to update:",
+        name: "employee",
+        type: "list",
+        choices: listEmployees,
+    },
+    {
+        message: "Enter updated first name (leave blank to skip):",
+        name: "first_name",
+        type: "input",
+    },
+    {
+        message: "Enter update last name (leave blank to skip):",
+        name: "last_name",
+        type: "input",
+    },
+    {
+        message: "Select updated role for employee:",
+        name: "role",
+        type: "list",
+        choices: listRoles,
+    },
+    {
+        message: "Select updated manager for employee:",
+        name: "manager",
+        type: "list",
+        chocies: listEmployeesExceptSelf,
+    }
+]
+
+module.exports = {};

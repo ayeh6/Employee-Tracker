@@ -1,83 +1,78 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-//const db = require('./db/connection');
+const db = require('./db/connection');
 const { Department, Role, Employee } = require('./models');
-//const questions = require('./src/questions');
+const questions = require('./src/questions');
 
-const viewAllDepartments = async () => {
+const viewAllDepartments = () => {
+    try {
+        db.query(`SELECT id, name FROM department`, function(err, res) {
+            console.log(res);
+        });
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+const viewAllRoles = () => {
+    try {
+        db.query(`SELECT role.id, title, name AS 'department', salary FROM department, role WHERE department_id = department.id`, function(err,res) {
+            console.log(res);
+        });
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+const viewAllEmployees = () => {
 
 }
 
-const viewAllRoles = async () => {
+const addDepartment = (department) => {
 
 }
 
-const viewAllEmployees = async () => {
+const addRole = (role) => {
 
 }
 
-const addDepartment = async (department) => {
+const addEmployee = (employee) => {
 
 }
 
-const addRole = async (role) => {
+const updateEmployee = (employee) => {
 
 }
 
-const addEmployee = async (employee) => {
+const updateEmployeeManager = (employee, manager) => {
 
 }
 
-const updateEmployee = async (employee) => {
+const viewEmployeeByManager = () => {
 
 }
 
-const updateEmployeeManager = async (employee, manager) => {
+const viewEmployeesByDepartment = () => {
 
 }
 
-const viewEmployeeByManager = async () => {
+const deleteDepartment = (department) => {
 
 }
 
-const viewEmployeesByDepartment = async () => {
+const deleteRole = (role) => {
 
 }
 
-const deleteDepartment = async (department) => {
+const deleteEmployee = (employee) => {
 
 }
 
-const deleteRole = async (role) => {
-
-}
-
-const deleteEmployee = async (employee) => {
-
-}
-
-const viewTotalDepartmentBudget = async (department) => {
+const viewTotalDepartmentBudget = (department) => {
 
 }
 
 const main = function () {
-    /*
-    show options:
-        view all departments
-        view all roles
-        view all employees
-        add a department
-        add a role
-        add an employee
-        update an employee
-        update an employee's manager
-        view employees by manager
-        view employees by department
-        delete department
-        delete role
-        delete employee
-        view total utilized budget of a department
-    */
     inquirer.prompt(questions.mainOptions).then((ans) => {
         let input = ans.input;
         if(input === "view all departments") {
@@ -86,27 +81,25 @@ const main = function () {
 
         } else if(input === "view all employees") {
 
-        }else if(input === "add a department") {
+        } else if (input === "add a department") {
 
-        }else if(input === "add a role") {
+        } else if (input === "add a role") {
 
-        }else if(input === "add an employee") {
+        } else if (input === "add an employee") {
 
-        }else if(input === "update an employee") {
+        } else if (input === "update an employee") {
 
-        }else if(input === "update an employee's manager") {
+        } else if (input === "view employees by manager") {
 
-        }else if(input === "view employees by manager") {
+        } else if (input === "view employees by department") {
 
-        }else if(input === "view employees by department") {
+        } else if (input === "delete department") {
 
-        }else if(input === "delete department") {
+        } else if (input === "delete role") {
 
-        }else if(input === "delete role") {
+        } else if (input === "delete employee") {
 
-        }else if(input === "delete employee") {
-
-        }else if(input === "view total utilized budget of a department") {
+        } else if (input === "view total utilized budget of a department") {
 
         }
     }).catch((e) => {
@@ -119,22 +112,25 @@ const main = function () {
     });
 }
 
-const test = [
-    {
-        name: "Andrew",
-        age: 26,
-    },
-    {
-        name: "Deo",
-        age: 28,
-    }
-]
+// const test = [
+//     {
+//         name: "Andrew",
+//         age: 26,
+//     },
+//     {
+//         name: "Deo",
+//         age: 28,
+//     }
+// ]
 
-const testfunction = function() {
-    console.log(test[0]);
-    test[0].gender = "male";
-}
+// const testfunction = function() {
+//     console.log(test[0]);
+//     test[0].gender = "male";
+// }
 
-testfunction();
-console.log(test[0]);
-console.log('done');
+// testfunction();
+// console.log(test[0]);
+// console.log('done');
+
+viewAllDepartments();
+viewAllRoles();
