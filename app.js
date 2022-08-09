@@ -1,35 +1,51 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
-const { Department, Role, Employee } = require('./models');
+const cTable = require('console.table');
+
+const { Department, Role, Employee, departmentList, roleList, employeeList } = require('./models');
 const questions = require('./src/questions');
 
 const viewAllDepartments = () => {
-    try {
-        db.query(`SELECT id, name FROM department`, function(err, res) {
-            console.log(res);
-        });
-    } catch(e) {
-        console.log(e);
-    }
+    db.query(`SELECT id, name
+              FROM department`, (err, res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            console.table(res);
+        }
+        main();
+    });
 }
 
 const viewAllRoles = () => {
-    try {
-        db.query(`SELECT role.id, title, name AS 'department', salary FROM department, role WHERE department_id = department.id`, function(err,res) {
-            console.log(res);
-        });
-    } catch(e) {
-        console.log(e);
-    }
+    db.query(`SELECT role.id, title, name AS 'department', salary
+                FROM department, role
+                WHERE department_id = department.id`, (err,res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            console.table(res);
+        }
+        main();
+    });
 }
 
 const viewAllEmployees = () => {
-
+    db.query(`SELECT  employee.id, CONCAT(first_name, ' ', last_name) AS name, title, name AS department, salary, (SELECT CONCAT(first_name, ' ', last_name) FROM employee AS managers WHERE employee.manager_id = managers.id) AS manager
+                FROM    employee, department, role
+                WHERE   employee.role_id = role.id AND role.department_id = department.id;`, (err,res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            console.table(res);
+        }
+        main();
+    });
 }
 
 const addDepartment = (department) => {
-
+    inquirer.prompt()
 }
 
 const addRole = (role) => {
@@ -40,12 +56,41 @@ const addEmployee = (employee) => {
 
 }
 
-const updateEmployee = (employee) => {
-
+const updateEmployee = () => {
+    inquirer.prompt(questions.updateEmployeeQuestions).then((ans) => {
+        console.log(ans);
+        questions.updateSelectedEmployee(ans.employee);
+        //update query
+        askUpdateManager();
+    });
 }
 
-const updateEmployeeManager = (employee, manager) => {
+const updateEmployeeManager = () => {
+    inquirer.prompt(questions.updateManagerQuestion).then((ans) => {
+        console.log(ans);
+        main();
+    });
+}
 
+const askUpdateManager = () => {
+    const question = [
+        {
+            message: "Update manager?",
+            name: "choice",
+            type: "list",
+            choices: [
+                'yes',
+                'no',
+            ]
+        }
+    ];
+    inquirer.prompt(question).then((ans) => {
+        if(ans.choice === 'yes') {
+            updateEmployeeManager();
+        } else {
+            main();
+        }
+    })
 }
 
 const viewEmployeeByManager = () => {
@@ -72,24 +117,24 @@ const viewTotalDepartmentBudget = (department) => {
 
 }
 
-const main = function () {
+const main = () => {
     inquirer.prompt(questions.mainOptions).then((ans) => {
         let input = ans.input;
         if(input === "view all departments") {
-
+            viewAllDepartments();
         } else if(input === "view all roles") {
-
+            viewAllRoles();
         } else if(input === "view all employees") {
-
+            viewAllEmployees();
         } else if (input === "add a department") {
-
+            addDepartment();
         } else if (input === "add a role") {
-
+            addRole();
         } else if (input === "add an employee") {
-
+            addEmployee();
         } else if (input === "update an employee") {
-
-        } else if (input === "view employees by manager") {
+            updateEmployee();
+        } else if (input === "view employees by manager") { //here down is optional to do
 
         } else if (input === "view employees by department") {
 
@@ -101,36 +146,60 @@ const main = function () {
 
         } else if (input === "view total utilized budget of a department") {
 
+        } else if (input === "DONE") {
+            process.exit(1);
         }
-    }).catch((e) => {
-        if (e.isTtyError) {
+    }).catch((error) => {
+        if (error.isTtyError) {
             console.log("Prompt couldn't be rendered in current environment");
             console.log(error.isTtyError);
         } else {
-            console.log(error);
+            console.error(error);
         }
     });
 }
 
-// const test = [
-//     {
-//         name: "Andrew",
-//         age: 26,
-//     },
-//     {
-//         name: "Deo",
-//         age: 28,
-//     }
-// ]
+const initialize = () => {
+    db.query(`SELECT * FROM department`, (err,res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            //console.log(res[0]);
+            for(let i=0; i<res.length; i++) {
+                const department = new Department(res[i].id, res[i].name);
+                departmentList.push(department);
+            }
+            //console.log(departmentList);
+        }
+    });
 
-// const testfunction = function() {
-//     console.log(test[0]);
-//     test[0].gender = "male";
-// }
+    db.query(`SELECT * FROM role`, (err,res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            //console.log(res[0]);
+            for(let i=0; i<res.length; i++) {
+                const role = new Role(res[i].id, res[i].title, res[i].salary, res[i].deparment_id);
+                roleList.push(role);
+            }
+            //console.log(roleList);
+        }
+    });
 
-// testfunction();
-// console.log(test[0]);
-// console.log('done');
+    db.query(`SELECT * FROM employee`, (err,res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            //console.log(res[0]);
+            for(let i=0; i<res.length; i++) {
+                const employee = new Employee(res[i].id, res[i].first_name, res[i].last_name, res[i].role_id, res[i].manager_id);
+                employeeList.push(employee);
+            }
+            //console.log(employeeList);
+        }
+    });
+    main();
+}
 
-viewAllDepartments();
-viewAllRoles();
+initialize();
+//main();

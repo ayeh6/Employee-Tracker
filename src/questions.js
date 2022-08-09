@@ -1,20 +1,69 @@
 const mysql = require('mysql2');
+const {departmentList, roleList, employeeList} = require('./../models');
 const db = require('./../db/connection');
 
-const listEmployees = async (ans) => {
-    
+let selectedEmployee = {
+    id: -1,
+    name: '',
+};
+
+const updateSelectedEmployee = (input) => {
+    console.log('updating employee');
+    selectedEmployee = input;
+    updateManagerQuestion[0].message = `Select employee to designate as ${selectedEmployee.name}'s manager`;
 }
 
-const listEmployeesNone = async (ans) => {
-    
+const listEmployees = () => {
+    const output = [];
+    for(let i=0; i<employeeList.length; i++) {
+        const employee = {
+            name: employeeList[i].getFirstName() + ' ' + employeeList[i].getLastName(),
+            value: {id: employeeList[i].getID(), name: employeeList[i].getFirstName()}
+        }
+        output.push(employee);
+    }
+    return output;
 }
 
-const listEmployeesExceptSelf = async (ans) => {
-
+const listEmployeesNone = () => {   //list all employees and none option
+    const output = [];
+    for(let i=0; i<employeeList.length; i++) {
+        const employee = {
+            name: employeeList[i].getFirstName() + ' ' + employeeList[i].getLastName(),
+            value: employeeList[i].getID()
+        }
+        output.push(employee);
+    }
+    output.push({name: 'none', value: -1});
+    return output;
 }
 
-const listRoles = async (ans) => {
+const listEmployeesExceptSelf = () => { //list all employees except selected one
+    const output = [];
+    console.log(selectedEmployee);
+    for(let i=0; i<employeeList.length; i++) {
+        if(employeeList[i].getID() !== selectedEmployee.id) {
+            const employee = {
+                name: employeeList[i].getFirstName() + ' ' + employeeList[i].getLastName(),
+                value: employeeList[i].getID()
+            }
+            output.push(employee);
+        }
+    }
+    output.push({name: 'none', value: -1});
+    return output;
+}
 
+const listRoles = () => {
+    const output = [];
+    for(let i=0; i<roleList.length; i++) {
+        const role = {
+            name: roleList[i].getTitle(),
+            value: roleList[i].getID()
+        }
+        output.push(role);
+    }
+    return output;
 }
 
 const mainOptions = [
@@ -36,7 +85,8 @@ const mainOptions = [
             "delete department",
             "delete role",
             "delete employee",
-            "view total utilized budget of a department"
+            "view total utilized budget of a department",
+            "DONE"
         ],
     }
 ];
@@ -114,13 +164,16 @@ const updateEmployeeQuestions = [
         name: "role",
         type: "list",
         choices: listRoles,
-    },
-    {
-        message: "Select updated manager for employee:",
-        name: "manager",
-        type: "list",
-        chocies: listEmployeesExceptSelf,
     }
-]
+];
 
-module.exports = {};
+const updateManagerQuestion = [
+        {
+            message: `Select employee to designate as this employee's manager`,
+            name: 'manager',
+            type: 'list',
+            choices: listEmployeesExceptSelf,
+        }
+    ];
+
+module.exports = {updateSelectedEmployee, mainOptions, addDepartmentQuestion, addRoleQuestions, addEmployeeQuestions, updateEmployeeQuestions, updateManagerQuestion, selectedEmployee};
