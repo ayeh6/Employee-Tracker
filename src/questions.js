@@ -1,5 +1,5 @@
 const mysql = require('mysql2');
-const {departmentList, roleList, employeeList} = require('./../models');
+const {departmentList, roleList, employeeList, managerList} = require('./../models');
 const db = require('./../db/connection');
 
 const selectedEmployee = {  //tracks selected employee for employee updates
@@ -77,6 +77,18 @@ const listDepartments = () => {
             value: departmentList[i].getID()
         }
         output.push(department);
+    }
+    return output;
+}
+
+const listManagers = () => {
+    const output = [];
+    for(let i=0; i<managerList.length; i++) {
+        const manager = {
+            name: managerList[i].getFirstName() + ' ' + managerList[i].getLastName(),
+            value: managerList[i].getID()
+        }
+        output.push(manager);
     }
     return output;
 }
@@ -196,7 +208,7 @@ const viewManagerEmployeesQuestion = [
         message: "Select a manager to see their employees:",
         name: "manager_id",
         type: "list",
-        choices: listDepartments,
+        choices: listManagers,
     }
 ];
 
@@ -230,11 +242,20 @@ const deleteRoleQuestion = [
 const deleteEmployeeQuestion = [
     {
         message: "Select an employee to delete:",
-        name: "employee_id",
+        name: "employee",
         type: "list",
         choices: listEmployees,
     }
 ];
+
+const viewDepartmentBudgetQuestion = [
+    {
+        message: "Select department to view total utilized budget",
+        name: "department_id",
+        type: "list",
+        choices: listDepartments,
+    }
+]
 
 module.exports = {
     mainOptions,
@@ -246,6 +267,9 @@ module.exports = {
     deleteDepartmentQuestion,
     deleteRoleQuestion,
     deleteEmployeeQuestion,
+    viewManagerEmployeesQuestion,
+    viewDepartmentEmployeesQuestion,
+    viewDepartmentBudgetQuestion,
     getSelectedEmployee,
     updateSelectedEmployee,
 };

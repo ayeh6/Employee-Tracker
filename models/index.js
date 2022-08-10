@@ -5,5 +5,6 @@ const Employee = require('./Employee');
 const departmentList = [];
 const roleList = [];
 const employeeList = [];
+const managerList = [];
 
-module.exports = {Department, Role, Employee, departmentList, roleList, employeeList};
+module.exports = {Department, Role, Employee, departmentList, roleList, employeeList, managerList};

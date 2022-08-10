@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const db = require('./db/connection');
 const cTable = require('console.table');
 
-const { Department, Role, Employee, departmentList, roleList, employeeList } = require('./models');
+const { Department, Role, Employee, departmentList, roleList, employeeList, managerList } = require('./models');
 const questions = require('./src/questions');
 
 const viewAllDepartments = () => {
@@ -44,7 +44,7 @@ const viewAllEmployees = () => {
     });
 }
 
-const addDepartment = (department) => {
+const addDepartment = () => {
     inquirer.prompt(questions.addDepartmentQuestion).then((ans) => {
         const name = ans.name;
         db.query(`INSERT INTO department (name) VALUES ('${name}')`,(err,res) => {
@@ -60,7 +60,7 @@ const addDepartment = (department) => {
     });
 }
 
-const addRole = (role) => {
+const addRole = () => {
     inquirer.prompt(questions.addRoleQuestions).then((ans) => {
         const title = ans.title;
         const salary = ans.salary;
@@ -77,7 +77,7 @@ const addRole = (role) => {
     });
 }
 
-const addEmployee = (employee) => {
+const addEmployee = () => {
     inquirer.prompt(questions.addEmployeeQuestions).then((ans) => {
         const first_name = ans.first_name;
         const last_name = ans.last_name;
@@ -119,6 +119,7 @@ const updateEmployeeManager = () => {
             if(err) {
                 console.error(err);
             } else {
+                //manager check
                 main();
             }
         });
@@ -143,31 +144,91 @@ const askUpdateManager = () => {
         } else {
             main();
         }
-    })
+    });
 }
 
 const viewEmployeeByManager = () => {
-
+    inquirer.prompt(questions.viewManagerEmployeesQuestion).then((ans) => {
+        const manager_id = ans.manager_id;
+        db.query(`SELECT employee.id, CONCAT(first_name, ' ', last_name) AS name, title FROM employee, role WHERE employee.manager_id=${manager_id} AND employee.role_id = role.id`, (err,res) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.table(res);
+                main();
+            }
+        });
+    })
 }
 
 const viewEmployeesByDepartment = () => {
-
+    inquirer.prompt(questions.viewDepartmentEmployeesQuestion).then((ans) => {
+        const department_id = ans.department_id;
+        db.query(`SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name, title FROM employee, role, department WHERE department.id = ${department_id} AND department.id = role.department_id AND employee.role_id = role.id`, (err,res) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.table(res);
+                main();
+            }
+        });
+    });
 }
 
-const deleteDepartment = (department) => {
-
+const deleteDepartment = () => {
+    inquirer.prompt(questions.deleteDepartmentQuestion).then((ans) => {
+        const department_id = ans.department_id;
+        db.query(`DELETE FROM department WHERE department.id = ${department_id}`, (err,res) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.log("Deleted");
+                main();
+            }
+        });
+    });
 }
 
-const deleteRole = (role) => {
-
+const deleteRole = () => {
+    inquirer.prompt(questions.deleteRoleQuestion).then((ans) => {
+        const role_id = ans.role_id;
+        db.query(`DELETE FROM role WHERE role.id = ${role_id}`, (err,res) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.log("Deleted");
+                main();
+            }
+        });
+    });
 }
 
-const deleteEmployee = (employee) => {
-
+const deleteEmployee = () => {
+    inquirer.prompt(questions.deleteEmployeeQuestion).then((ans) => {
+        const employee_id = ans.employee.id;
+        db.query(`DELETE FROM employee WHERE employee.id = ${employee_id}`, (err,res) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.log("Deleted");
+                main();
+            }
+        });
+    });
 }
 
 const viewTotalDepartmentBudget = (department) => {
-
+    inquirer.prompt(questions.viewDepartmentBudgetQuestion).then((ans) => {
+        const department_id = ans.department_id;
+        db.query(`SELECT SUM(salary) AS budget FROM role, department WHERE role.department_id = department.id AND department.id = ${department_id}`, (err,res) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.table(res);
+                main();
+            }
+        });
+    })
 }
 
 const main = () => {
@@ -188,17 +249,17 @@ const main = () => {
         } else if (input === "update an employee") {
             updateEmployee();       //done
         } else if (input === "view employees by manager") {
-
+            viewEmployeeByManager();    //done
         } else if (input === "view employees by department") {
-
+            viewEmployeesByDepartment();    //done
         } else if (input === "delete department") {
-
+            deleteDepartment();
         } else if (input === "delete role") {
-
+            deleteRole();
         } else if (input === "delete employee") {
-
+            deleteEmployee();
         } else if (input === "view total utilized budget of a department") {
-
+            viewTotalDepartmentBudget();
         } else if (input === "DONE") {
             process.exit(1);
         }
@@ -232,7 +293,7 @@ const initialize = () => {
         } else {
             //console.log(res[0]);
             for(let i=0; i<res.length; i++) {
-                const role = new Role(res[i].id, res[i].title, res[i].salary, res[i].deparment_id);
+                const role = new Role(res[i].id, res[i].title, res[i].salary, res[i].department_id);
                 roleList.push(role);
             }
             //console.log(roleList);
@@ -249,6 +310,17 @@ const initialize = () => {
                 employeeList.push(employee);
             }
             //console.log(employeeList);
+        }
+    });
+
+    db.query(`SELECT manager.id, manager.first_name, manager.last_name, manager.role_id, manager.manager_id FROM employee AS manager, employee WHERE manager.id=employee.manager_id`, (err,res) => {
+        if(err) {
+            console.error(err);
+        } else {
+            for(let i=0; i<res.length; i++) {
+                const manager = new Employee(res[i].id, res[i].first_name, res[i].last_name, res[i].role_id, res[i].manager_id);
+                managerList.push(manager);
+            }
         }
     });
     main();
