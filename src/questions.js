@@ -2,18 +2,22 @@ const mysql = require('mysql2');
 const {departmentList, roleList, employeeList} = require('./../models');
 const db = require('./../db/connection');
 
-let selectedEmployee = {
+const selectedEmployee = {  //tracks selected employee for employee updates
     id: -1,
     name: '',
 };
 
-const updateSelectedEmployee = (input) => {
-    console.log('updating employee');
-    selectedEmployee = input;
+const getSelectedEmployee = () => { //returns the selected employee
+    return selectedEmployee;
+}
+
+const updateSelectedEmployee = (input) => { //updates the employee selected for an update, also changes update message for manager
+    selectedEmployee.id = input.id;
+    selectedEmployee.name = input.name;
     updateManagerQuestion[0].message = `Select employee to designate as ${selectedEmployee.name}'s manager`;
 }
 
-const listEmployees = () => {
+const listEmployees = () => {   //list all employees
     const output = [];
     for(let i=0; i<employeeList.length; i++) {
         const employee = {
@@ -40,7 +44,6 @@ const listEmployeesNone = () => {   //list all employees and none option
 
 const listEmployeesExceptSelf = () => { //list all employees except selected one
     const output = [];
-    console.log(selectedEmployee);
     for(let i=0; i<employeeList.length; i++) {
         if(employeeList[i].getID() !== selectedEmployee.id) {
             const employee = {
@@ -54,7 +57,7 @@ const listEmployeesExceptSelf = () => { //list all employees except selected one
     return output;
 }
 
-const listRoles = () => {
+const listRoles = () => {   //lists all roles
     const output = [];
     for(let i=0; i<roleList.length; i++) {
         const role = {
@@ -62,6 +65,18 @@ const listRoles = () => {
             value: roleList[i].getID()
         }
         output.push(role);
+    }
+    return output;
+}
+
+const listDepartments = () => {
+    const output = [];
+    for(let i=0; i<departmentList.length; i++) {
+        const department = {
+            name: departmentList[i].getName(),
+            value: departmentList[i].getID()
+        }
+        output.push(department);
     }
     return output;
 }
@@ -79,7 +94,6 @@ const mainOptions = [
             "add a role",
             "add an employee",
             "update an employee",
-            "update an employee's manager",
             "view employees by manager",
             "view employees by department",
             "delete department",
@@ -102,7 +116,7 @@ const addDepartmentQuestion = [
 const addRoleQuestions = [
     {
         message: "Enter title of role:",
-        name: "name",
+        name: "title",
         type: "input",
     },
     {
@@ -114,7 +128,7 @@ const addRoleQuestions = [
         message: "Select department for role:",
         name: "department",
         type: "list",
-        //choices: list of departments
+        choices: listDepartments
     }
 ];
 
@@ -133,6 +147,7 @@ const addEmployeeQuestions = [
         message: "Select employee's role:",
         name: "role",
         type: "list",
+        choices: listRoles,
     },
     {
         message: "Select employee's manager:",
@@ -168,12 +183,69 @@ const updateEmployeeQuestions = [
 ];
 
 const updateManagerQuestion = [
-        {
-            message: `Select employee to designate as this employee's manager`,
-            name: 'manager',
-            type: 'list',
-            choices: listEmployeesExceptSelf,
-        }
-    ];
+    {
+        message: `Select employee to designate as this employee's manager`,
+        name: 'manager_id',
+        type: 'list',
+        choices: listEmployeesExceptSelf,
+    }
+];
 
-module.exports = {updateSelectedEmployee, mainOptions, addDepartmentQuestion, addRoleQuestions, addEmployeeQuestions, updateEmployeeQuestions, updateManagerQuestion, selectedEmployee};
+const viewManagerEmployeesQuestion = [
+    {
+        message: "Select a manager to see their employees:",
+        name: "manager_id",
+        type: "list",
+        choices: listDepartments,
+    }
+];
+
+const viewDepartmentEmployeesQuestion = [
+    {
+        message: "Select which department to view employees:",
+        name: "department_id",
+        type: "list",
+        choices: listDepartments,
+    }
+];
+
+const deleteDepartmentQuestion = [
+    {
+        message: "Select department to delete:",
+        name: 'department_id',
+        type: 'list',
+        choices: listDepartments,
+    }
+];
+
+const deleteRoleQuestion = [
+    {
+        message: "Select role to delete:",
+        name: "role_id",
+        type: "list",
+        choices: listRoles,
+    }
+];
+
+const deleteEmployeeQuestion = [
+    {
+        message: "Select an employee to delete:",
+        name: "employee_id",
+        type: "list",
+        choices: listEmployees,
+    }
+];
+
+module.exports = {
+    mainOptions,
+    addDepartmentQuestion,
+    addRoleQuestions,
+    addEmployeeQuestions,
+    updateEmployeeQuestions,
+    updateManagerQuestion,
+    deleteDepartmentQuestion,
+    deleteRoleQuestion,
+    deleteEmployeeQuestion,
+    getSelectedEmployee,
+    updateSelectedEmployee,
+};
