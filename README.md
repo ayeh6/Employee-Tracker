@@ -1,4 +1,4 @@
-# Project Name - change to the name of your project
+# Employee Tracker
 
 ## Table of contents
 
