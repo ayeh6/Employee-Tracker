@@ -2,8 +2,8 @@ const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
 const cTable = require('console.table');
-
-const { Department, Role, Employee, departmentList, roleList, employeeList, managerList } = require('./models');
+const modelLists = require('./src/modelLists');
+const { getSelectedEmployee } = require('./src/modelLists');
 const questions = require('./src/questions');
 
 const viewAllDepartments = () => {
@@ -51,9 +51,7 @@ const addDepartment = () => {
             if(err) {
                 console.error(err);
             } else {
-                console.log(res);
-                const department = new Department(res.insertId, name);
-                departmentList.push(department);
+                modelLists.updateLists();
                 main();
             }
         });
@@ -69,8 +67,7 @@ const addRole = () => {
             if(err) {
                 console.error(err);
             } else {
-                const role = new Role(res.insertId, title, salary, department);
-                roleList.push(role);
+                modelLists.updateLists();
                 main();
             }
         });
@@ -87,8 +84,7 @@ const addEmployee = () => {
             if(err) {
                 console.error(err);
             } else {
-                const employee = new Employee(res.insertId, first_name, last_name, role, manager);
-                employeeList.push(employee);
+                modelLists.updateLists();
                 main();
             }
         });
@@ -114,12 +110,12 @@ const updateEmployee = () => {
 const updateEmployeeManager = () => {
     inquirer.prompt(questions.updateManagerQuestion).then((ans) => {
         const manager_id = (ans.manager_id === -1) ? 'NULL' : ans.manager_id;
-        const id = questions.getSelectedEmployee().id;
+        const id = getSelectedEmployee().id;
         db.query(`UPDATE employee SET manager_id = ${manager_id} WHERE id = ${id}`, (err,res) => {
             if(err) {
                 console.error(err);
             } else {
-                //manager check
+                modelLists.updateLists();
                 main();
             }
         });
@@ -183,6 +179,7 @@ const deleteDepartment = () => {
                 console.error(err);
             } else {
                 console.log("Deleted");
+                modelLists.updateLists();
                 main();
             }
         });
@@ -197,6 +194,7 @@ const deleteRole = () => {
                 console.error(err);
             } else {
                 console.log("Deleted");
+                modelLists.updateLists();
                 main();
             }
         });
@@ -211,6 +209,7 @@ const deleteEmployee = () => {
                 console.error(err);
             } else {
                 console.log("Deleted");
+                modelLists.updateLists();
                 main();
             }
         });
@@ -273,58 +272,7 @@ const main = () => {
     });
 }
 
-const initialize = () => {
-    db.query(`SELECT * FROM department`, (err,res) => {
-        if(err) {
-            console.error(err);
-        } else {
-            //console.log(res[0]);
-            for(let i=0; i<res.length; i++) {
-                const department = new Department(res[i].id, res[i].name);
-                departmentList.push(department);
-            }
-            //console.log(departmentList);
-        }
-    });
 
-    db.query(`SELECT * FROM role`, (err,res) => {
-        if(err) {
-            console.error(err);
-        } else {
-            //console.log(res[0]);
-            for(let i=0; i<res.length; i++) {
-                const role = new Role(res[i].id, res[i].title, res[i].salary, res[i].department_id);
-                roleList.push(role);
-            }
-            //console.log(roleList);
-        }
-    });
 
-    db.query(`SELECT * FROM employee`, (err,res) => {
-        if(err) {
-            console.error(err);
-        } else {
-            //console.log(res[0]);
-            for(let i=0; i<res.length; i++) {
-                const employee = new Employee(res[i].id, res[i].first_name, res[i].last_name, res[i].role_id, res[i].manager_id);
-                employeeList.push(employee);
-            }
-            //console.log(employeeList);
-        }
-    });
-
-    db.query(`SELECT manager.id, manager.first_name, manager.last_name, manager.role_id, manager.manager_id FROM employee AS manager, employee WHERE manager.id=employee.manager_id`, (err,res) => {
-        if(err) {
-            console.error(err);
-        } else {
-            for(let i=0; i<res.length; i++) {
-                const manager = new Employee(res[i].id, res[i].first_name, res[i].last_name, res[i].role_id, res[i].manager_id);
-                managerList.push(manager);
-            }
-        }
-    });
-    main();
-}
-
-initialize();
-//main();
+modelLists.initialize();
+main();
