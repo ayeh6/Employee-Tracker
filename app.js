@@ -94,8 +94,8 @@ const addEmployee = () => {
 const updateEmployee = () => {
     inquirer.prompt(questions.updateEmployeeQuestions).then((ans) => {
         questions.updateSelectedEmployee(ans.employee);
-        const firstName = (ans.first_name === '') ? '' : ` first_name = ${ans.first_name},`;
-        const lastName = (ans.last_name === '') ? '' : ` last_name = ${ans.last_name},`;
+        const firstName = (ans.first_name === '') ? '' : ` first_name = '${ans.first_name}',`;
+        const lastName = (ans.last_name === '') ? '' : ` last_name = '${ans.last_name}',`;
         const role = ` role_id = ${ans.role}`;
         db.query(`UPDATE employee SET${firstName}${lastName}${role} WHERE id=${ans.employee.id}`, (err,res) => {
             if(err) {
@@ -219,7 +219,7 @@ const deleteEmployee = () => {
 const viewTotalDepartmentBudget = (department) => {
     inquirer.prompt(questions.viewDepartmentBudgetQuestion).then((ans) => {
         const department_id = ans.department_id;
-        db.query(`SELECT SUM(salary) AS budget FROM role, department WHERE role.department_id = department.id AND department.id = ${department_id}`, (err,res) => {
+        db.query(`SELECT SUM(salary) AS budget FROM role, department, employee WHERE role.id = employee.role_id AND role.department_id = department.id AND department.id = ${department_id}`, (err,res) => {
             if(err) {
                 console.error(err);
             } else {

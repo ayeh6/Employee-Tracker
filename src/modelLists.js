@@ -49,7 +49,7 @@ const initialize = () => {
         }
     });
 
-    db.query(`SELECT manager.id, manager.first_name, manager.last_name, manager.role_id, manager.manager_id FROM employee AS manager, employee WHERE manager.id=employee.manager_id`, (err,res) => {
+    db.query(`SELECT DISTINCT manager.id, manager.first_name, manager.last_name, manager.role_id, manager.manager_id FROM employee AS manager, employee WHERE manager.id=employee.manager_id`, (err,res) => {
         if(err) {
             console.error(err);
         } else {
@@ -100,7 +100,7 @@ const updateLists = async () => {
         }
     });
 
-    db.query(`SELECT manager.id, manager.first_name, manager.last_name, manager.role_id, manager.manager_id FROM employee AS manager, employee WHERE manager.id=employee.manager_id`, (err,res) => {
+    db.query(`SELECT DISTINCT manager.id, manager.first_name, manager.last_name, manager.role_id, manager.manager_id FROM employee AS manager, employee WHERE manager.id=employee.manager_id`, (err,res) => {
         if(err) {
             console.error(err);
         } else {
